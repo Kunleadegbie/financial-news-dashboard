@@ -10,11 +10,12 @@ from sec_edgar_downloader import Downloader
 import os
 from openai import OpenAI
 
-# --- API key loading ---
+# Load API Key from Streamlit Secrets
 openai_api_key = st.secrets["openai_key"]
 
-# --- Initialize OpenAI client ---
+# Initialize OpenAI Client
 client = OpenAI(api_key=openai_api_key)
+
 
 # --- Summarizer function ---
 def summarize_text(text):
