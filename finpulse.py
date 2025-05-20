@@ -1,3 +1,5 @@
+# finpulse_app.py
+
 import streamlit as st
 import feedparser
 from textblob import TextBlob
@@ -8,20 +10,17 @@ from sec_edgar_downloader import Downloader
 import os
 from openai import OpenAI
 
-# API key loading
+# --- API key loading ---
 openai_api_key = os.getenv("OPENAI_API_KEY") or st.secrets.get("openai_key")
+
 if not openai_api_key:
     st.error("⚠️ OpenAI API key not found. Please set the 'OPENAI_API_KEY' environment variable or add 'openai_key' to Streamlit Secrets.")
     st.stop()
 
-from openai import OpenAI
+# --- Initialize OpenAI client ---
 client = OpenAI(api_key=openai_api_key)
 
-
-# Initialize OpenAI client
-client = OpenAI(api_key=openai_api_key)
-
-# Summarizer function
+# --- Summarizer function ---
 def summarize_text(text):
     try:
         response = client.chat.completions.create(
@@ -37,7 +36,7 @@ def summarize_text(text):
     except Exception as e:
         return f"Summarization error: {str(e)}"
 
-# Function to fetch and analyze news feed
+# --- Function to fetch and analyze news feed ---
 def get_news_sentiment(feed_url):
     feed = feedparser.parse(feed_url)
     articles = []
@@ -54,11 +53,11 @@ def get_news_sentiment(feed_url):
         })
     return pd.DataFrame(articles)
 
-# App config
+# --- App config ---
 st.set_page_config(page_title="FinPulse | Financial News & Sentiment")
 st.title("📈 FinPulse: Financial News & Sentiment Dashboard")
 
-# Sidebar config
+# --- Sidebar config ---
 st.sidebar.header("🛠️ Settings")
 
 # Predefined list of financial RSS feeds
@@ -73,8 +72,6 @@ rss_feeds = {
 
 # Dropdown to select RSS feed
 selected_feed = st.sidebar.selectbox("📡 Select News Feed", list(rss_feeds.keys()))
-
-# Get corresponding URL from selection
 feed_url = rss_feeds[selected_feed]
 
 # Watchlist input
@@ -92,7 +89,7 @@ if 'news_df' not in st.session_state:
 
 news_df = st.session_state['news_df']
 
-# Market Mood Gauge
+# --- Market Mood Gauge ---
 st.subheader("📊 Market Mood")
 fig, ax = plt.subplots(figsize=(4, 2))
 average_sentiment = news_df['Sentiment Score'].mean()
@@ -102,7 +99,7 @@ ax.set_xlim(-1, 1)
 ax.set_xlabel("Sentiment Score")
 st.pyplot(fig)
 
-# Top Bullish/Bearish News
+# --- Top Bullish & Bearish News ---
 st.subheader("🔥 Top Bullish & Bearish Headlines")
 col1, col2 = st.columns(2)
 
@@ -114,12 +111,12 @@ with col2:
     st.write("**Top 5 Bearish**")
     st.dataframe(news_df.sort_values(by='Sentiment Score', ascending=True).head(5))
 
-# Watchlist News
+# --- Watchlist News ---
 st.subheader("📌 Watchlist News")
 watchlist_news = news_df[news_df['Title'].str.contains('|'.join(watchlist), case=False)]
 st.dataframe(watchlist_news)
 
-# Sector Mapping
+# --- Sector Mapping ---
 sector_map = {
     'AAPL': 'Technology',
     'TSLA': 'Automotive',
@@ -136,7 +133,7 @@ def get_sector(title):
 
 news_df['Sector'] = news_df['Title'].apply(get_sector)
 
-# Sector Sentiment Heatmap
+# --- Sector Sentiment Heatmap ---
 st.subheader("📊 Sector Sentiment Heatmap")
 sector_sentiment = news_df.groupby('Sector')['Sentiment Score'].mean().reset_index()
 
@@ -145,16 +142,19 @@ heatmap_data = sector_sentiment.pivot_table(values='Sentiment Score', index='Sec
 sns.heatmap(heatmap_data, annot=True, cmap='coolwarm', center=0, ax=ax)
 st.pyplot(fig)
 
-# SEC Filings Downloader
+# --- SEC Filings Downloader ---
 st.sidebar.subheader("📥 Download SEC Filings")
 ticker_input = st.sidebar.text_input("SEC Filing Ticker", "AAPL")
 
 if st.sidebar.button("📥 Download Filings"):
     os.makedirs("sec_filings", exist_ok=True)
-    dl = Downloader("kadegbie@gmail.com", "sec_filings")
-    dl.get("10-K", ticker_input, limit=5)
-    st.sidebar.success(f"Downloaded latest 10-K filings for {ticker_input}.")
+    dl = Downloader("your_email@example.com", "sec_filings")
+    try:
+        dl.get("10-K", ticker_input, amount=3)
+        st.sidebar.success(f"Downloaded latest 3 10-K filings for {ticker_input}")
+    except Exception as e:
+        st.sidebar.error(f"Error downloading filings: {str(e)}")
 
-# Full News Feed Table
-st.subheader("📰 Full News Feed")
-st.dataframe(news_df)
+# --- Footer ---
+st.markdown("---")
+st.markdown("Made with ❤️ by [Your Name] | Powered by OpenAI & Streamlit")
