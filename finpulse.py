@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from sec_edgar_downloader import Downloader
 import os
-import openai
+from openai import OpenAI
 
 # API key loading
 openai_api_key = os.getenv("OPENAI_API_KEY") or st.secrets.get("openai_key")
@@ -14,12 +14,17 @@ if not openai_api_key:
     st.error("⚠️ OpenAI API key not found. Please set the 'OPENAI_API_KEY' environment variable or add 'openai_key' to Streamlit Secrets.")
     st.stop()
 
-openai.api_key = openai_api_key
+from openai import OpenAI
+client = OpenAI(api_key=openai_api_key)
+
+
+# Initialize OpenAI client
+client = OpenAI(api_key=openai_api_key)
 
 # Summarizer function
 def summarize_text(text):
     try:
-        response = openai.ChatCompletion.create(
+        response = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[
                 {"role": "system", "content": "You are a financial news summarizer."},
@@ -68,6 +73,8 @@ rss_feeds = {
 
 # Dropdown to select RSS feed
 selected_feed = st.sidebar.selectbox("📡 Select News Feed", list(rss_feeds.keys()))
+
+# Get corresponding URL from selection
 feed_url = rss_feeds[selected_feed]
 
 # Watchlist input
