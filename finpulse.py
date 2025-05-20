@@ -144,7 +144,7 @@ ticker_input = st.sidebar.text_input("SEC Filing Ticker", "AAPL")
 
 if st.sidebar.button("📥 Download Filings"):
     os.makedirs("sec_filings", exist_ok=True)
-    dl = Downloader("your_email@example.com", "sec_filings")
+    dl = Downloader("kadegbie@gmail.com", "sec_filings")
     try:
         dl.get("10-K", ticker_input, amount=3)
         st.sidebar.success(f"Downloaded latest 3 10-K filings for {ticker_input}")
