@@ -154,4 +154,4 @@ if st.sidebar.button("📥 Download Filings"):
 
 # --- Footer ---
 st.markdown("---")
-st.markdown("Made with ❤️ by [Your Name] | Powered by OpenAI & Streamlit")
+st.markdown("Made with ❤️ by Adekunle Adegbie | Powered by OpenAI & Streamlit")
