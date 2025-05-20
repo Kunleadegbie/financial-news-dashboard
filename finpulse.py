@@ -1,4 +1,4 @@
-import streamlit as st 
+import streamlit as st
 import feedparser
 from textblob import TextBlob
 import pandas as pd
@@ -8,13 +8,12 @@ from sec_edgar_downloader import Downloader
 import os
 import openai
 
-# ✅ Load OpenAI API key from Streamlit secrets
+# API key loading
 openai_api_key = os.getenv("OPENAI_API_KEY") or st.secrets.get("openai_key")
 if not openai_api_key:
-    st.error("⚠️ OpenAI API key not found. Please set it in Streamlit Secrets or as an environment variable.")
+    st.error("⚠️ OpenAI API key not found. Please set the 'OPENAI_API_KEY' environment variable or add 'openai_key' to Streamlit Secrets.")
     st.stop()
 
-# ✅ Set OpenAI API key
 openai.api_key = openai_api_key
 
 # Summarizer function
@@ -29,7 +28,7 @@ def summarize_text(text):
             max_tokens=50,
             temperature=0.7
         )
-        return response['choices'][0]['message']['content'].strip()
+        return response.choices[0].message.content.strip()
     except Exception as e:
         return f"Summarization error: {str(e)}"
 
@@ -57,7 +56,7 @@ st.title("📈 FinPulse: Financial News & Sentiment Dashboard")
 # Sidebar config
 st.sidebar.header("🛠️ Settings")
 
-# RSS Feeds
+# Predefined list of financial RSS feeds
 rss_feeds = {
     "Yahoo Finance (AAPL, TSLA, MSFT, NVDA, AMZN)": "https://feeds.finance.yahoo.com/rss/2.0/headline?s=AAPL,TSLA,MSFT,NVDA,AMZN&region=US&lang=en-US",
     "Reuters Business News": "http://feeds.reuters.com/reuters/businessNews",
@@ -67,7 +66,7 @@ rss_feeds = {
     "CNBC Top News": "https://www.cnbc.com/id/100003114/device/rss/rss.html",
 }
 
-# Feed selection
+# Dropdown to select RSS feed
 selected_feed = st.sidebar.selectbox("📡 Select News Feed", list(rss_feeds.keys()))
 feed_url = rss_feeds[selected_feed]
 
@@ -90,7 +89,8 @@ news_df = st.session_state['news_df']
 st.subheader("📊 Market Mood")
 fig, ax = plt.subplots(figsize=(4, 2))
 average_sentiment = news_df['Sentiment Score'].mean()
-ax.barh(['Sentiment'], [average_sentiment], color='green' if average_sentiment >= 0 else 'red')
+ax.barh(['Sentiment'], [average_sentiment],
+        color='green' if average_sentiment >= 0 else 'red')
 ax.set_xlim(-1, 1)
 ax.set_xlabel("Sentiment Score")
 st.pyplot(fig)
@@ -98,9 +98,11 @@ st.pyplot(fig)
 # Top Bullish/Bearish News
 st.subheader("🔥 Top Bullish & Bearish Headlines")
 col1, col2 = st.columns(2)
+
 with col1:
     st.write("**Top 5 Bullish**")
     st.dataframe(news_df.sort_values(by='Sentiment Score', ascending=False).head(5))
+
 with col2:
     st.write("**Top 5 Bearish**")
     st.dataframe(news_df.sort_values(by='Sentiment Score', ascending=True).head(5))
@@ -142,5 +144,10 @@ ticker_input = st.sidebar.text_input("SEC Filing Ticker", "AAPL")
 
 if st.sidebar.button("📥 Download Filings"):
     os.makedirs("sec_filings", exist_ok=True)
-    dl = Downloader("your-email@example.com", "sec_filings")
+    dl = Downloader("kadegbie@gmail.com", "sec_filings")
     dl.get("10-K", ticker_input, limit=5)
+    st.sidebar.success(f"Downloaded latest 10-K filings for {ticker_input}.")
+
+# Full News Feed Table
+st.subheader("📰 Full News Feed")
+st.dataframe(news_df)
