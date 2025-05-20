@@ -1,0 +1,17 @@
+# Ignore Streamlit secrets
+.streamlit/secrets.toml
+
+# Ignore virtual environments
+venv/
+.env/
+
+# Ignore Python cache files
+__pycache__/
+*.pyc
+
+# Ignore SEC filings folder (optional if you don't want to push downloaded filings)
+sec_filings/
+
+# Ignore other possible personal files
+*.log
+.DS_Store

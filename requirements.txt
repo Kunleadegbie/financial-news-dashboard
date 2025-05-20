@@ -1,0 +1,12 @@
+streamlit
+feedparser
+textblob
+newspaper3k
+matplotlib
+seaborn
+sec-edgar-downloader
+pandas
+openai>=1.0.0
+python-dotenv
+
+
